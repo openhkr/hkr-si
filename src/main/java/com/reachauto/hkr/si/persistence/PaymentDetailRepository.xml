@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.reachauto.hkr.si.persistence.PaymentDetailRepository">
+
+    <resultMap id="paymentDetail" type="com.reachauto.hkr.si.entity.PaymentDetailDO">
+        <result property="paymentId" column="payment_id"/>
+        <result property="orderId" column="order_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="orderType" column="order_type"/>
+        <result property="tradeNo" column="trade_no"/>
+        <result property="tradeStatus" column="trade_status"/>
+        <result property="buyerId" column="buyer_id"/>
+        <result property="tradeTotalFee" column="trade_total_fee"/>
+        <result property="tradeCTime" column="trade_ctime"/>
+        <result property="paymentSource" column="payment_source"/>
+        <result property="paymentType" column="payment_type"/>
+        <result property="finishBizCallback" column="finish_biz_callback"/>
+        <result property="bizCallbackUrl" column="biz_callback_url"/>
+        <result property="openId" column="open_id"/>
+        <result property="envTag" column="env_tag"/>
+
+        <result property="createdAt" column="create_date"/>
+        <result property="createdBy" column="create_by"/>
+        <result property="updatedAt" column="update_date"/>
+        <result property="updatedBy" column="update_by"/>
+        <result property="remarks" column="remarks"/>
+        <result property="deleted" column="del_flag"/>
+    </resultMap>
+
+    <sql id="columns">
+        payment_id,
+        order_id,
+        user_id,
+        order_type,
+        trade_no,
+        trade_status,
+        buyer_id,
+        trade_total_fee,
+        trade_ctime,
+        payment_source,
+        payment_type,
+        finish_biz_callback,
+        biz_callback_url,
+        open_id,
+        env_tag,
+
+        create_date,
+        create_by,
+        update_date,
+        update_by,
+        remarks,
+        del_flag
+    </sql>
+
+    <select id="findById" resultMap="paymentDetail" parameterType="java.lang.Long">
+        select
+        <include refid="columns"/>
+        from
+          rt_payment_detail
+        where
+          del_flag = 0
+          and payment_id = #{id}
+    </select>
+
+    <update id="finishTrade" parameterType="com.reachauto.hkr.si.entity.PaymentDetailDO">
+        UPDATE
+          rt_payment_detail
+        SET
+          trade_status = #{tradeStatus},
+          buyer_id = #{buyerId},
+          trade_no = #{tradeNo},
+          update_by = #{updatedBy},
+          update_date = NOW()
+        WHERE
+          del_flag = 0
+          AND payment_id = #{paymentId}
+          AND trade_total_fee = #{tradeTotalFee}
+          AND trade_status IN (4, 8)
+    </update>
+
+    <update id="refunding" parameterType="com.reachauto.hkr.si.entity.PaymentDetailDO">
+        UPDATE
+        rt_payment_detail
+        SET
+        trade_status = 16,
+        update_by = #{updatedBy},
+        update_date = NOW()
+        WHERE
+        del_flag = 0
+        AND payment_id = #{paymentId}
+        AND trade_status = 1
+    </update>
+
+    <update id="manualRefunding" parameterType="com.reachauto.hkr.si.entity.PaymentDetailDO">
+        UPDATE
+        rt_payment_detail
+        SET
+        trade_status = 64,
+        update_by = #{updatedBy},
+        update_date = NOW()
+        WHERE
+        del_flag = 0
+        AND payment_id = #{paymentId}
+        AND trade_status = 1
+    </update>
+
+    <update id="refunded" parameterType="com.reachauto.hkr.si.entity.PaymentDetailDO">
+        UPDATE
+        rt_payment_detail
+        SET
+        trade_status = 32,
+        update_by = #{updatedBy},
+        update_date = NOW()
+        WHERE
+        del_flag = 0
+        AND payment_id = #{paymentId}
+        AND trade_status = 16
+    </update>
+
+    <update id="manualRefunded" parameterType="com.reachauto.hkr.si.entity.PaymentDetailDO">
+        UPDATE
+        rt_payment_detail
+        SET
+        trade_status = 128,
+        update_by = #{updatedBy},
+        update_date = NOW()
+        WHERE
+        del_flag = 0
+        AND payment_id = #{paymentId}
+        AND trade_status IN (1, 64)
+    </update>
+
+    <update id="refundFailed" parameterType="com.reachauto.hkr.si.entity.PaymentDetailDO">
+        UPDATE
+        rt_payment_detail
+        SET
+        trade_status = 1,
+        update_by = #{updatedBy},
+        update_date = NOW()
+        WHERE
+        del_flag = 0
+        AND payment_id = #{paymentId}
+        AND trade_status = 16
+    </update>
+
+    <update id="settlementTrade" parameterType="com.reachauto.hkr.si.entity.PaymentDetailDO">
+        UPDATE
+          rt_payment_detail
+        SET
+          trade_status = 8,
+          update_by = #{updatedBy},
+          update_date = NOW()
+        WHERE
+          payment_id = #{paymentId}
+          AND del_flag = 0
+          AND trade_status = 4;
+    </update>
+
+    <select id="findByOrderTypeAndOrderId" resultMap="paymentDetail" resultType="List">
+        SELECT
+        <include refid="columns"/>
+        FROM rt_payment_detail
+        WHERE order_type = #{orderType}
+        AND order_id = #{orderId}
+        AND del_flag != 1
+    </select>
+
+
+    <update id="update" parameterType="com.reachauto.hkr.si.entity.PaymentDetailDO" >
+        update rt_payment_detail
+        <set>
+            <if test="orderId != null" >
+                order_id = #{orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="userId != null" >
+                user_id = #{userId,jdbcType=VARCHAR},
+            </if>
+            <if test="orderType != null" >
+                order_type = #{orderType,jdbcType=INTEGER},
+            </if>
+            <if test="tradeNo != null" >
+                trade_no = #{tradeNo,jdbcType=VARCHAR},
+            </if>
+            <if test="tradeStatus != null" >
+                trade_status = #{tradeStatus,jdbcType=INTEGER},
+            </if>
+            <if test="buyerId != null" >
+                buyer_id = #{buyerId,jdbcType=VARCHAR},
+            </if>
+            <if test="tradeTotalFee != null" >
+                trade_total_fee = #{tradeTotalFee,jdbcType=DECIMAL},
+            </if>
+            <if test="tradeCTime != null" >
+                trade_ctime = #{tradeCTime,jdbcType=TIMESTAMP},
+            </if>
+            update_date = NOW(),
+            update_by = #{updatedBy,jdbcType=VARCHAR},
+            <if test="remarks != null" >
+                remarks = #{remarks,jdbcType=VARCHAR},
+            </if>
+            <if test="finishBizCallback != null" >
+                finish_biz_callback = #{finishBizCallback,jdbcType=INTEGER},
+            </if>
+        </set>
+        where
+          del_flag = 0
+          and payment_id = #{paymentId,jdbcType=BIGINT}
+    </update>
+
+    <insert id="create" parameterType="com.reachauto.hkr.si.entity.PaymentDetailDO" >
+        insert into rt_payment_detail
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="paymentId != null" >
+                payment_id,
+            </if>
+            <if test="orderId != null" >
+                order_id,
+            </if>
+            <if test="userId != null" >
+                user_id,
+            </if>
+            <if test="orderType != null" >
+                order_type,
+            </if>
+            <if test="tradeNo != null" >
+                trade_no,
+            </if>
+            <if test="tradeStatus != null" >
+                trade_status,
+            </if>
+            <if test="buyerId != null" >
+                buyer_id,
+            </if>
+            <if test="tradeTotalFee != null" >
+                trade_total_fee,
+            </if>
+            <if test="tradeCTime != null" >
+                trade_ctime,
+            </if>
+            <if test="createdAt != null" >
+                create_date,
+            </if>
+            <if test="createdBy != null" >
+                create_by,
+            </if>
+            <if test="updatedAt != null" >
+                update_date,
+            </if>
+            <if test="updatedBy != null" >
+                update_by,
+            </if>
+            <if test="remarks != null" >
+                remarks,
+            </if>
+            <if test="deleted != null" >
+                del_flag,
+            </if>
+            <if test="paymentSource != null" >
+                payment_source,
+            </if>
+            <if test="paymentType != null" >
+                payment_type,
+            </if>
+            <if test="finishBizCallback != null" >
+                finish_biz_callback,
+            </if>
+            <if test="bizCallbackUrl != null" >
+                biz_callback_url,
+            </if>
+            <if test="openId != null" >
+                open_id,
+            </if>
+            <if test="envTag != null" >
+                env_tag,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="paymentId != null" >
+                #{paymentId,jdbcType=BIGINT},
+            </if>
+            <if test="orderId != null" >
+                #{orderId,jdbcType=VARCHAR},
+            </if>
+            <if test="userId != null" >
+                #{userId,jdbcType=VARCHAR},
+            </if>
+            <if test="orderType != null" >
+                #{orderType,jdbcType=INTEGER},
+            </if>
+            <if test="tradeNo != null" >
+                #{tradeNo,jdbcType=VARCHAR},
+            </if>
+            <if test="tradeStatus != null" >
+                #{tradeStatus,jdbcType=INTEGER},
+            </if>
+            <if test="buyerId != null" >
+                #{buyerId,jdbcType=VARCHAR},
+            </if>
+            <if test="tradeTotalFee != null" >
+                #{tradeTotalFee,jdbcType=DECIMAL},
+            </if>
+            <if test="tradeCTime != null" >
+                #{tradeCTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createdAt != null" >
+                #{createdAt,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createdBy != null" >
+                #{createdBy,jdbcType=VARCHAR},
+            </if>
+            <if test="updatedAt != null" >
+                #{updatedAt,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updatedBy != null" >
+                #{updatedBy,jdbcType=VARCHAR},
+            </if>
+            <if test="remarks != null" >
+                #{remarks,jdbcType=VARCHAR},
+            </if>
+            <if test="deleted != null" >
+                #{deleted,jdbcType=CHAR},
+            </if>
+            <if test="paymentSource != null" >
+                #{paymentSource,jdbcType=INTEGER},
+            </if>
+            <if test="paymentType != null" >
+                #{paymentType,jdbcType=INTEGER},
+            </if>
+            <if test="finishBizCallback != null" >
+                #{finishBizCallback,jdbcType=INTEGER},
+            </if>
+            <if test="bizCallbackUrl != null" >
+                #{bizCallbackUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="openId != null" >
+                #{openId,jdbcType=VARCHAR},
+            </if>
+            <if test="envTag != null" >
+                #{envTag,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="queryUnPayresult" resultMap="paymentDetail" parameterType="java.lang.Integer">
+        SELECT
+        <include refid="columns"/>
+        FROM
+          rt_payment_detail
+        WHERE
+          del_flag = 0
+          AND trade_status IN (4, 8)
+          AND create_date <![CDATA[ < ]]> FROM_UNIXTIME(UNIX_TIMESTAMP(NOW()) - 900)
+          AND env_tag = #{envTag}
+          AND biz_callback_url != ""
+    </select>
+
+    <select id="queryRefundingResult" resultMap="paymentDetail" parameterType="java.lang.Integer">
+        SELECT
+        <include refid="columns"/>
+        FROM
+        rt_payment_detail
+        WHERE
+        del_flag = 0
+        AND trade_status <![CDATA[ & ]]> 80 > 0
+        AND update_date <![CDATA[ < ]]> FROM_UNIXTIME(UNIX_TIMESTAMP(NOW()) - 300)
+        AND env_tag = #{envTag}
+    </select>
+
+    <select id="queryUnCallback" resultMap="paymentDetail" parameterType="java.lang.Integer">
+        SELECT
+        <include refid="columns"/>
+        FROM
+          rt_payment_detail
+        WHERE
+          del_flag = 0
+          AND trade_status IN (1, 2)
+          AND finish_biz_callback = 1
+          AND env_tag = #{envTag}
+          AND biz_callback_url != ""
+    </select>
+
+    <select id="sumfeeByUserAndOrderType" resultType="java.math.BigDecimal">
+        SELECT
+          SUM(trade_total_fee)
+        FROM rt_payment_detail
+        WHERE
+        del_flag = 0
+        and user_id = #{userId}
+        AND order_type &amp; #{type} > 0
+    </select>
+</mapper>

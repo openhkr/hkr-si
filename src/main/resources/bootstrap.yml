@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: hkr-si
+
+endpoints:
+  refresh:
+    enabled: true
+  shutdown:
+    enabled: true
+  env:
+    post:
+      enabled: true
+  restart:
+    enabled: true
+  health:
+    sensitive: true
+
+management:
+  security:
+    enabled: false
+
+
+
+service:
+  version:
+    info: "@project.version@"
+
+mybatis:
+  config-location: "classpath:/mybatis-config.xml"
+  type-aliases-package: com.reachauto.hkr.si.entity,com.reachauto.hkr.si.pojo
+  mapper-locations: ["classpath:/com/reachauto/hkr/si/persistence/**/*Repository.xml"]

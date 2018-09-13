@@ -1,0 +1,61 @@
+CREATE TABLE `rt_payment_detail` (
+  `payment_id` bigint(20) NOT NULL COMMENT '主键ID',
+  `order_id` varchar(64) NOT NULL COMMENT '订单ID',
+  `user_name` varchar(32) NOT NULL DEFAULT '' COMMENT '付款者用户名id',
+  `user_id` varchar(32) NOT NULL DEFAULT '' COMMENT '用户id',
+  `order_type` int(3) DEFAULT NULL COMMENT '订单类型：1 充值，2 租赁',
+  `trade_no` varchar(64) DEFAULT NULL COMMENT '交易流水号',
+  `trade_status` int(3) DEFAULT NULL COMMENT '交易状态：1 成功，2 失败,4处理中,8结算中,16退款中, 32已退款',
+  `buyer_id` varchar(32) DEFAULT NULL COMMENT '支付账号',
+  `trade_total_fee` decimal(8,2) NOT NULL DEFAULT '0.00' COMMENT '交易余额',
+  `trade_ctime` datetime NOT NULL COMMENT '交易创建时间',
+  `create_date` datetime NOT NULL COMMENT '创建时间',
+  `create_by` varchar(64) NOT NULL COMMENT '创建人id',
+  `update_date` datetime NOT NULL COMMENT '更新时间',
+  `update_by` varchar(64) NOT NULL COMMENT '变更人id',
+  `remarks` varchar(255) NOT NULL COMMENT '备注信息',
+  `del_flag` char(1) NOT NULL DEFAULT '0' COMMENT '删除标记 默认为0  已经删除为1',
+  `payment_source` int(11) NOT NULL COMMENT '※ 支付来源：1 余额，2 支付宝，4 微信，8微信公众号',
+  `payment_type` int(3) DEFAULT NULL,
+  `finish_biz_callback` int(11) NOT NULL DEFAULT '1' COMMENT '是否完成业务回调,1.未完成,2.已完成',
+  `biz_callback_url` varchar(512) NOT NULL DEFAULT '' COMMENT '业务回调地址',
+  `open_id` varchar(64) DEFAULT NULL COMMENT '微信id',
+  `env_tag` int(11) NOT NULL DEFAULT '1' COMMENT '环境变量',
+  PRIMARY KEY (`payment_id`),
+  KEY `index_order_id` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='支付明细表';
+
+CREATE TABLE `refund_record` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `payment_id` bigint(20) NOT NULL COMMENT '支付流水',
+  `order_id` varchar(255) DEFAULT NULL COMMENT '订单id',
+  `order_type` int(11) NOT NULL COMMENT '订单类型',
+  `trade_no` varchar(40) DEFAULT NULL COMMENT '第三方支付平台流水号',
+  `out_trade_no` varchar(40) DEFAULT NULL COMMENT '商户订单号',
+  `trade_status` int(11) DEFAULT NULL COMMENT '状态 1:成功,2:失败',
+  `buyer_id` varchar(32) DEFAULT NULL COMMENT '卖家id',
+  `amount` decimal(8,2) NOT NULL COMMENT '退款金额',
+  `created_at` datetime DEFAULT NULL COMMENT '创建时间',
+  `created_by` varchar(32) DEFAULT NULL COMMENT '创建者',
+  `updated_at` datetime DEFAULT NULL COMMENT '更新时间',
+  `updated_by` varchar(32) DEFAULT NULL COMMENT '更人者',
+  `remarks` varchar(200) DEFAULT NULL COMMENT '备注',
+  `deleted` tinyint(4) DEFAULT NULL COMMENT '删除标记',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='退款记录';
+
+CREATE TABLE `payment_result_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `out_trade_no` varchar(255) NOT NULL DEFAULT '' COMMENT '商户订单号',
+  `trade_no` varchar(255) NOT NULL DEFAULT '' COMMENT '交易流水号',
+  `payment_source` int(10) NOT NULL DEFAULT '0' COMMENT '交易类型（1.余额;2.支付宝;4.微信;8.微信公众号）',
+  `log_type` int(10) NOT NULL DEFAULT '0' COMMENT '记录类型（1.查询;2.回调）',
+  `result` varchar(3000) DEFAULT NULL COMMENT '结果记录',
+  `created_at` datetime DEFAULT NULL COMMENT '创建时间',
+  `created_by` varchar(32) DEFAULT NULL COMMENT '创建者',
+  `updated_at` datetime DEFAULT NULL COMMENT '更新时间',
+  `updated_by` varchar(32) DEFAULT NULL COMMENT '更人者',
+  `remarks` varchar(200) DEFAULT NULL COMMENT '备注',
+  `deleted` tinyint(4) DEFAULT NULL COMMENT '删除标记',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='支付交易结果';

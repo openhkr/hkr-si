@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.reachauto.hkr.si.persistence.RefundRecordRepository">
+
+    <sql id="Base_Column_List" >
+        id, payment_id, order_id, order_type, trade_no, trade_status, buyer_id,
+        amount, created_at, created_by, updated_at, updated_by, remarks, deleted
+    </sql>
+
+    <insert id="create" parameterType="com.reachauto.hkr.si.entity.RefundRecordDO" keyProperty="id" useGeneratedKeys="true">
+        insert into
+        refund_record (id, payment_id, order_id,
+        order_type, trade_no,
+        trade_status, buyer_id, amount,
+        created_at, created_by, updated_at,
+        updated_by, remarks, deleted)
+        values (#{id,jdbcType=INTEGER}, #{paymentId,jdbcType=BIGINT}, #{orderId,jdbcType=VARCHAR},
+        #{orderType,jdbcType=INTEGER}, #{tradeNo,jdbcType=VARCHAR},
+        #{tradeStatus,jdbcType=INTEGER}, #{buyerId,jdbcType=VARCHAR}, #{amount,jdbcType=DECIMAL},
+        #{createdAt,jdbcType=TIMESTAMP}, #{createdBy,jdbcType=VARCHAR}, #{updatedAt,jdbcType=TIMESTAMP},
+        #{updatedBy,jdbcType=VARCHAR}, #{remarks,jdbcType=VARCHAR}, 0)
+    </insert>
+
+    <select id="findByPaymentId" resultType="com.reachauto.hkr.si.entity.RefundRecordDO" parameterType="java.lang.Long" >
+        select
+          <include refid="Base_Column_List" />
+        from
+          refund_record
+        where
+          deleted = 0
+          and payment_id = #{paymentId}
+    </select>
+
+    <update id="delete" parameterType="java.lang.Long">
+        UPDATE
+        refund_record
+        SET
+        deleted = 1,
+        updated_at = NOW()
+        WHERE
+        deleted = 0
+        AND id = #{id}
+    </update>
+
+</mapper>
